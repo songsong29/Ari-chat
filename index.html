@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>AI 伴侣实验对话</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:#e9e2db; --card:#f6f7f8; --shadow:0 8px 20px rgba(0,0,0,.08);
+    --ai:#f0f2f6; --user:#e6f4ea; --brand:#2f7d6d;
+  }
+  body {
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background: var(--bg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  }
+  .wrap { width: min(860px, 92vw); }
+  #chatbox {
+    background: #fff; border: 1px solid #dedede; border-radius: 14px;
+    box-shadow: var(--shadow); padding: 20px 20px 16px;
+  }
+  .welcome {
+    background: var(--card); padding: 14px 16px; border-radius: 12px; margin: 6px 0 14px;
+    font-size: 20px; line-height: 1.5;
+  }
+  .conversation { max-height: 420px; overflow:auto; padding: 4px 0 8px; }
+  .bubble { border-radius: 12px; padding: 10px 14px; margin: 8px 0; max-width: 80%; line-height:1.6; }
+  .ai { background: var(--ai); }
+  .user { background: var(--user); margin-left:auto; text-align:right; }
+  .inputrow { display:flex; gap:10px; margin-top:10px; }
+  textarea { flex:1; border:1px solid #d7dbe2; border-radius:12px; padding:12px; resize:vertical; min-height:88px; }
+  button.send { background: var(--brand); color:#fff; border:0; border-radius:10px; padding:0 18px; font-weight:600; }
+  .disclosure {
+    margin-top: 10px; font-size: 12px; color:#6b7280;
+    background:#f3f4f6; border:1px dashed #d1d5db; border-radius:10px; padding:8px 10px;
+  }
+  .muted { color:#6b7280; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="chatbox">
+    <div class="welcome"><b>Airi：</b>你好！请告诉我你最近的一件小烦恼，或者让你有点压力的事。</div>
+
+    <div id="conversation" class="conversation"></div>
+
+    <div class="inputrow">
+      <textarea id="userInput" placeholder="输入你的消息…" aria-label="输入你的消息"></textarea>
+      <button class="send" id="sendBtn" type="button">发送</button>
+    </div>
+
+    <!-- 页面级披露：当 disclosure=披露 时显示；不披露则隐藏 -->
+    <div id="disclosureNote" class="disclosure" hidden>
+      请注意：Airi 只是一个 <b>AI 工具</b>，不具备真实的情感或意识。本页面的内容仅用于研究目的，请理性看待。
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 参数与实验条件 =====
+const qs = new URLSearchParams(location.search);
+let expressiveness = qs.get('expressiveness') || "高表达";   // 高表达/低表达
+let disclosure     = qs.get('disclosure')     || "不披露";   // 披露/不披露（页面披露）
+const maxRounds = 6;
+
+let round = 1;
+let logs = [];
+let startedAt = Date.now();
+
+// ===== 预置回复（6轮） =====
+const replies_high = [
+  "听起来你最近真的有些累呢，我能理解这种感觉。",
+  "谢谢你和我分享这一切，你已经很努力了。",
+  "也许你可以暂时停下来，给自己一点喘息的空间。",
+  "情绪波动是正常的，我在这里听你说。",
+  "有时候把感受说出来，本身就是一种力量。",
+  "希望我们的聊天能让你轻松一点。"
+];
+const replies_low = [
+  "已记录。请简要说明主要原因。",
+  "建议你分析问题来源，并列出 2–3 个可执行步骤。",
+  "可以尝试目标拆解与时间盒管理。",
+  "请给出一个最优先的具体小目标。",
+  "根据你的描述，建议记录进展并每晚复盘。",
+  "信息已保存。如需进一步分解，请输入具体目标。"
+];
+
+const $conv = document.getElementById('conversation');
+const $input = document.getElementById('userInput');
+const $send  = document.getElementById('sendBtn');
+const $note  = document.getElementById('disclosureNote');
+
+// 初始渲染：页面披露开关
+if (disclosure === "披露") {
+  $note.hidden = false;
+} else {
+  $note.hidden = true;
+}
+
+// 发送按钮
+$send.addEventListener('click', nextRound);
+$input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) nextRound(); });
+
+function addBubble(side, text){
+  const div = document.createElement('div');
+  div.className = `bubble ${side}`;
+  div.innerHTML = `<b>${side === 'ai' ? 'Airi' : '你'}：</b> ${escapeHTML(text)}`;
+  $conv.appendChild(div);
+  $conv.scrollTop = $conv.scrollHeight;
+}
+
+// 仅依据表达风格选择回复；不再进行任何“关键词披露”
+function pickReply(expr, r){
+  const arr = expr === "高表达" ? replies_high : replies_low;
+  return arr[Math.min(r-1, arr.length-1)] || "";
+}
+
+function nextRound(){
+  const t = $input.value.trim();
+  if(!t) return;
+
+  addBubble('user', t);
+  logs.push(`Round ${round} (User): ${t}`);
+
+  const aiReply = pickReply(expressiveness, round);
+  addBubble('ai', aiReply);
+  logs.push(`Round ${round} (Airi): ${aiReply}`);
+
+  $input.value = "";
+  round++;
+  if(round > maxRounds){
+    endChat();
+  }
+}
+
+function endChat(){
+  $input.disabled = true; $send.disabled = true;
+  addBubble('ai', "对话完成，感谢你的参与。你可以点击下一页。");
+
+  const payload = {
+    type: "chatlog",
+    expressiveness,
+    disclosure,
+    disclosure_mode: "page",
+    rounds: round - 1,
+    duration_ms: Date.now() - startedAt,
+    log: logs.join("\n")
+  };
+  // 回传给父页面（见数/Qualtrics）
+  window.parent?.postMessage(payload, "*");
+
+  // 兜底：写入隐藏字段
+  const hiddenInput = document.createElement('input');
+  hiddenInput.type = "hidden";
+  hiddenInput.name = "chat_log";
+  hiddenInput.value = payload.log;
+  document.body.appendChild(hiddenInput);
+}
+
+// 工具：转义
+function escapeHTML(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+</script>
+</body>
+</html>
