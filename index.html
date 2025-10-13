@@ -65,10 +65,10 @@
 
 <script>
 // ===== 参数与实验条件 =====
-const qs = new URLSearchParams(location.search);
-let expressiveness = qs.get('expressiveness') || "高表达";   // 高表达/低表达
-let disclosure     = qs.get('disclosure')     || "不披露";   // 披露/不披露（页面披露）
-const maxRounds = 6;
+const urlParams = new URLSearchParams(window.location.search);
+const expressiveness = urlParams.get('expressiveness') || "高表达";   // 高表达/低表达
+const disclosure     = urlParams.get('disclosure')     || "不披露";   // 披露/不披露（页面披露）
+const maxRounds = 5;
 
 let round = 1;
 let logs = [];
@@ -79,14 +79,14 @@ const replies_high = [
   "听起来你最近真的有些累呢，我能理解这种感觉。",
   "谢谢你和我分享这一切，你已经很努力了。",
   "也许你可以暂时停下来，给自己一点喘息的空间。",
-  "情绪波动是正常的，我在这里听你说。",
+  "情绪波动是正常的，希望我们的聊天能让你轻松一点。",
   "请记住，你并不孤单。无论面对什么挑战，都可以随时告诉我。"
 ];
 const replies_low = [
-  "已记录。我可以帮你分析原因并列出任务优先级。",
-  "建议你分析问题来源，并列出 2–3 个可执行步骤。",
-  "请给出一个最优先的具体小目标。",
-  "根据你的描述，建议记录进展并每晚复盘。",
+  "我理解。你可以使用目标拆解法尝试解决。",
+  "建议你尝试分析问题来源并列出可执行步骤。"
+  "请考虑制定具体的计划，例如时间管理或优先级排序。",
+  "根据你的描述，可使用数据或日志追踪进展。",
   "请注意合理分配精力和资源，有条不紊地推进。"
 ];
 
@@ -94,6 +94,10 @@ const $conv = document.getElementById('conversation');
 const $input = document.getElementById('userInput');
 const $send  = document.getElementById('sendBtn');
 const $note  = document.getElementById('disclosureNote');
+const replies = {
+  "高表达": replies_high,
+  "低表达": replies_low
+};
 
 // 初始渲染：页面披露开关
 if (disclosure === "披露") {
