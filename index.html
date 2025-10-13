@@ -147,7 +147,6 @@ function nextRound(){
     hiddenInput.value = logs.join("\n");
     document.body.appendChild(hiddenInput);
   }
-}
   // 回传给主页面
   window.parent?.postMessage(payload, "*");
 
