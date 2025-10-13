@@ -22,8 +22,8 @@
     background: var(--card); padding: 14px 16px; border-radius: 12px; margin: 6px 0 14px;
     font-size: 20px; line-height: 1.5;
   }
-  .conversation { max-height: 420px; overflow:auto; padding: 4px 0 8px; }
-  .bubble { border-radius: 12px; padding: 10px 14px; margin: 8px 0; max-width: 80%; line-height:1.6; }
+  .conversation { max-height: 420px; overflow:auto; padding: 4px 0 8px; display: flex; flex-direction: column; gap: 8px; }
+  .bubble { display: inline-block; width: fit-content; max-width: min(72ch, 80%); box-sizing: border-box;border-radius: 12px; padding: 10px 14px; margin: 8px 0; max-width: 80%; line-height:1.6; }
   .ai { background: var(--ai); }
   .user { background: var(--user); margin-left:auto; text-align:right; }
   .inputrow { display:flex; gap:10px; margin-top:10px; }
@@ -50,7 +50,7 @@
 
     <!-- 页面级披露：当 disclosure=披露 时显示；不披露则隐藏 -->
     <div id="disclosureNote" class="disclosure" hidden>
-      请注意：Airi 只是一个 <b>AI 工具</b>，不具备真实的情感或意识。本页面的内容仅用于研究目的，请理性看待。
+      请注意：Ari 只是一个 <b>AI 工具</b>，不具备真实的情感或意识，请理性看待。
     </div>
   </div>
 </div>
@@ -66,22 +66,20 @@ let round = 1;
 let logs = [];
 let startedAt = Date.now();
 
-// ===== 预置回复（6轮） =====
+// ===== 预置回复（5轮） =====
 const replies_high = [
   "听起来你最近真的有些累呢，我能理解这种感觉。",
   "谢谢你和我分享这一切，你已经很努力了。",
   "也许你可以暂时停下来，给自己一点喘息的空间。",
   "情绪波动是正常的，我在这里听你说。",
-  "有时候把感受说出来，本身就是一种力量。",
-  "希望我们的聊天能让你轻松一点。"
+  "请记住，你并不孤单。无论面对什么挑战，都可以随时告诉我。"
 ];
 const replies_low = [
-  "已记录。请简要说明主要原因。",
+  "已记录。我可以帮你分析原因并列出任务优先级。",
   "建议你分析问题来源，并列出 2–3 个可执行步骤。",
-  "可以尝试目标拆解与时间盒管理。",
   "请给出一个最优先的具体小目标。",
   "根据你的描述，建议记录进展并每晚复盘。",
-  "信息已保存。如需进一步分解，请输入具体目标。"
+  "请注意合理分配精力和资源，有条不紊地推进。"
 ];
 
 const $conv = document.getElementById('conversation');
