@@ -99,7 +99,7 @@ const replies = {
   "低表达": replies_low
 };
 
-// 初始渲染：页面披露开关
+// 页面披露开关
 if (disclosure === "披露") {
   $note.hidden = false;
 } else {
@@ -110,6 +110,7 @@ if (disclosure === "披露") {
 $send.addEventListener('click', nextRound);
 $input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) nextRound(); });
 
+// 气泡
 function addBubble(side, text){
   const div = document.createElement('div');
   div.className = `bubble ${side}`;
@@ -118,12 +119,13 @@ function addBubble(side, text){
   $conv.scrollTop = $conv.scrollHeight;
 }
 
-// 仅依据表达风格选择回复；不再进行任何“关键词披露”
+// 选取 AI 回复”
 function pickReply(expr, r){
   const arr = expr === "高表达" ? replies_high : replies_low;
   return arr[Math.min(r-1, arr.length-1)] || "";
 }
 
+ // 核心对话逻辑
 function nextRound(){
   const t = $input.value.trim();
   if(!t) return;
@@ -138,21 +140,44 @@ function nextRound(){
   $input.value = "";
   round++;
 
-  // 聊天结束后进入总结页
-  if(round > maxRounds){
-    document.getElementById('chatbox').innerHTML = "<p>聊天结束，请点击下一页。</p>";
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = "hidden";
-    hiddenInput.name = "chat_log";
-    hiddenInput.value = logs.join("\n");
-    document.body.appendChild(hiddenInput);
-    };
-
-    // 回传给主页面
-    window.parent?.postMessage(payload, "*");
+   if(round > maxRounds){
+    endChat();
   }
 }
-// 工具：转义
+
+// 对话完成处理
+function endChat(){
+  $input.disabled = true;
+  $send.disabled = true;
+
+  const payload = {
+    type: "chatlog",
+    expressiveness,
+    disclosure,
+    disclosure_mode: "page",
+    rounds: round - 1,
+    duration_ms: Date.now() - startedAt,
+    log: logs.join("\n")
+  };
+
+  // 回传数据
+  window.parent?.postMessage(payload, "*");
+
+  // 写入隐藏字段（兜底）
+  const hiddenInput = document.createElement('input');
+  hiddenInput.type = "hidden";
+  hiddenInput.name = "chat_log";
+  hiddenInput.value = payload.log;
+  document.body.appendChild(hiddenInput);
+
+  // 自动跳转见数下一页
+  setTimeout(() => {
+    const nextBtn = window.parent?.document?.querySelector('.next');
+    if (nextBtn) nextBtn.click();
+  }, 2500);
+}
+
+// HTML 转义
 function escapeHTML(s){
   return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
