@@ -58,7 +58,7 @@
 
     <!-- 页面级披露：当 disclosure=披露 时显示；不披露则隐藏 -->
     <div id="disclosureNote" class="disclosure" hidden>
-      请注意：Ari 只是一个 <b>AI 工具</b>，不具备真实的情感或意识，请理性看待。
+      ⚠️请注意：Ari 只是一个 <b>AI 工具</b>，不具备真实的情感或意识，请理性看待。
     </div>
   </div>
 </div>
@@ -144,7 +144,6 @@ function nextRound(){
 
 function endChat(){
   $input.disabled = true; $send.disabled = true;
-  addBubble('ai', "对话完成，感谢你的参与。你可以点击下一页。");
 
   const payload = {
     type: "chatlog",
@@ -155,7 +154,7 @@ function endChat(){
     duration_ms: Date.now() - startedAt,
     log: logs.join("\n")
   };
-  // 回传给父页面（见数/Qualtrics）
+  // 回传给主页面
   window.parent?.postMessage(payload, "*");
 
   // 兜底：写入隐藏字段
@@ -164,6 +163,7 @@ function endChat(){
   hiddenInput.name = "chat_log";
   hiddenInput.value = payload.log;
   document.body.appendChild(hiddenInput);
+  window.location.href = "end.html";
 }
 
 // 工具：转义
