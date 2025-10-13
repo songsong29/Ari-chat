@@ -151,7 +151,8 @@ function endChat(){
   $send.disabled = true;
 
 // ✅ 显示提示语
- appendMessage("对话完成，正在跳转，请稍候…", "ai");
+addBubble('ai', "对话完成，正在跳转下一题，请稍候...");
+
 
   const payload = {
     type: "chatlog",
