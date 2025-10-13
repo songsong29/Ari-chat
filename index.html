@@ -137,18 +137,33 @@ function nextRound(){
 
   $input.value = "";
   round++;
-  
-    // End chat after 5 rounds
+
+  // 聊天结束后进入总结页
   if(round > maxRounds){
-    document.getElementById('chatbox').innerHTML = "<p>聊天结束，请点击下一页。</p>";
+    const payload = {
+      type: "chatlog",
+      expressiveness,
+      disclosure,
+      disclosure_mode: "page",
+      rounds: round - 1,
+      duration_ms: Date.now() - startedAt,
+      log: logs.join("\n")
+    };
+
+    // 回传给主页面
+    window.parent?.postMessage(payload, "*");
+
+    // 写入隐藏字段（兜底）
     const hiddenInput = document.createElement('input');
     hiddenInput.type = "hidden";
     hiddenInput.name = "chat_log";
-    hiddenInput.value = logs.join("\n");
+    hiddenInput.value = payload.log;
     document.body.appendChild(hiddenInput);
+
+    // 跳转到 end.html 页面
+    window.location.href = "end.html";
   }
-  // 回传给主页面
-  window.parent?.postMessage(payload, "*");
+}
 
   // 兜底：写入隐藏字段
   const hiddenInput = document.createElement('input');
