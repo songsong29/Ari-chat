@@ -125,7 +125,7 @@ function pickReply(expr, r){
   return arr[Math.min(r-1, arr.length-1)] || "";
 }
 
- // 核心对话逻辑
+ // 对话逻辑
 function nextRound(){
   const t = $input.value.trim();
   if(!t) return;
@@ -150,8 +150,8 @@ function endChat(){
   $input.disabled = true;
   $send.disabled = true;
 
-// ✅ 添加你希望显示的提示语
- appendMessage("系统提示", "对话完成，正在跳转下一题，请稍候…", "ai");
+// ✅ 显示提示语
+ appendMessage("对话完成，正在跳转，请稍候…", "ai");
 
   const payload = {
     type: "chatlog",
