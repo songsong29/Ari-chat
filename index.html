@@ -137,18 +137,27 @@ function nextRound(){
 
   addBubble('user', t);
   logs.push(`Round ${round} (User): ${t}`);
-
-  const aiReply = pickReply(expressiveness, round);
-  addBubble('ai', aiReply);
-  logs.push(`Round ${round} (Ari): ${aiReply}`);
-
   $input.value = "";
-  round++;
 
-   if(round > maxRounds){
-    endChat();
-  }
+  // 显示“思考中”提示
+  const thinking = document.createElement('div');
+  thinking.className = 'bubble ai';
+  thinking.textContent = "Ari 正在思考中...";
+  $conv.appendChild(thinking);
+  $conv.scrollTop = $conv.scrollHeight;
+
+  setTimeout(()=>{
+    thinking.remove(); // 删除“思考中”
+    const aiReply = pickReply(expressiveness, round);
+    addBubble('ai', aiReply);
+    logs.push(`Round ${round} (Ari): ${aiReply}`);
+    round++;
+    if(round > maxRounds){
+      setTimeout(endChat, 1500);
+    }
+  }, 1200 + Math.random() * 800); // 模拟思考时间 1.2~2秒
 }
+
 
 // 对话完成处理
 function endChat(){
