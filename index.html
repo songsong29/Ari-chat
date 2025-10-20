@@ -66,8 +66,8 @@
 <script>
 // ===== 参数与实验条件 =====
 const urlParams = new URLSearchParams(window.location.search);
-const expressiveness = urlParams.get('expressiveness') || "高表达";   // 高表达/低表达
-const disclosure     = urlParams.get('disclosure')     || "不披露";   // 披露/不披露（页面披露）
+const expressiveness = urlParams.get('expressiveness') || "high";   // 高表达/低表达
+const disclosure     = urlParams.get('disclosure')     || "none";   // 披露/不披露（页面披露）
 const maxRounds = 5;
 
 let round = 1;
@@ -100,7 +100,7 @@ const replies = {
 };
 
 // 页面披露开关
-if (disclosure === "披露") {
+if (disclosure === "disclose") {
   $note.hidden = false;
 } else {
   $note.hidden = true;
@@ -108,7 +108,12 @@ if (disclosure === "披露") {
 
 // 发送按钮
 $send.addEventListener('click', nextRound);
-$input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) nextRound(); });
+$input.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    nextRound();
+  }
+});
 
 // 气泡
 function addBubble(side, text){
@@ -161,7 +166,7 @@ function endChat(){
   };
 
   // 回传数据
-  window.parent?.postMessage(payload, "*");
+  window.parent?.postMessage(payload, "https://www.credamo.com");
 
   // 写入隐藏字段（兜底）
   const hiddenInput = document.createElement('input');
@@ -172,8 +177,12 @@ function endChat(){
 
   // 自动跳转见数下一页
   setTimeout(() => {
-    const nextBtn = window.parent?.document?.querySelector('.next');
-    if (nextBtn) nextBtn.click();
+    try {
+      const nextBtn = window.parent?.document?.querySelector('.next');
+      if (nextBtn) nextBtn.click();
+    } catch(e) {
+      console.warn("无法访问父窗口按钮", e);
+    }
   }, 2500);
 }
 
