@@ -22,7 +22,7 @@
     background: var(--card); padding: 10px 12px; border-radius: 12px; margin: 6px 0 14px;
     font-size: 16px; line-height: 1.5;
   }
-  .conversation { max-height: 420px; overflow:auto; padding: 4px 0 8px; display: flex; flex-direction: column; gap: 8px; }
+  .conversation { max-height: 420px; overflow:auto; padding: 4px 0 8px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
   .bubble { display: inline-block; width: fit-content; max-width: min(72ch, 80%); 
            box-sizing: border-box;border-radius: 12px; padding: 10px 14px; margin: 8px 0; max-width: 80%; line-height:1.6;
            text-align:left;
@@ -66,8 +66,8 @@
 <script>
 // ===== 参数与实验条件 =====
 const urlParams = new URLSearchParams(window.location.search);
-const expressiveness = urlParams.get('expressiveness') || "high";   // 高表达/低表达
-const disclosure     = urlParams.get('disclosure')     || "none";   // 披露/不披露（页面披露）
+const expressiveness = urlParams.get('expressiveness') || "high";   // 参数: high / low
+const disclosure     = urlParams.get('disclosure')     || "none";   // 参数: disclose / none
 const maxRounds = 5;
 
 let round = 1;
@@ -94,10 +94,6 @@ const $conv = document.getElementById('conversation');
 const $input = document.getElementById('userInput');
 const $send  = document.getElementById('sendBtn');
 const $note  = document.getElementById('disclosureNote');
-const replies = {
-  "高表达": replies_high,
-  "低表达": replies_low
-};
 
 // 页面披露开关
 if (disclosure === "disclose") {
@@ -142,7 +138,7 @@ function nextRound(){
   // 显示“思考中”提示
   const thinking = document.createElement('div');
   thinking.className = 'bubble ai';
-  thinking.textContent = "Ari 正在思考中...";
+  thinking.textContent = "Ari 正在输入...";
   $conv.appendChild(thinking);
   $conv.scrollTop = $conv.scrollHeight;
 
@@ -152,17 +148,26 @@ function nextRound(){
     addBubble('ai', aiReply);
     logs.push(`Round ${round} (Ari): ${aiReply}`);
     round++;
-    if(round > maxRounds){
-      setTimeout(endChat, 1500);
+    
+   if(round > maxRounds){
+      // 🔧 增加温柔结束语
+      setTimeout(()=>{
+        addBubble('ai', "谢谢你和我聊到这里，我们继续问卷吧。");
+        setTimeout(endChat, 2000);
+      }, 1000);
     }
-  }, 1200 + Math.random() * 800); // 模拟思考时间 1.2~2秒
+  }, 1200 + Math.random() * 800); // 模拟思考时间 1.2–2秒
 }
+
 
 
 // 对话完成处理
 function endChat(){
   $input.disabled = true;
   $send.disabled = true;
+   $input.style.background = "#f0f0f0";      // 🔧 新增：禁用时灰底提示
+  $input.placeholder = "对话已结束";        // 🔧 新增：灰底文字
+
 
   const payload = {
     type: "chatlog",
@@ -171,11 +176,15 @@ function endChat(){
     disclosure_mode: "page",
     rounds: round - 1,
     duration_ms: Date.now() - startedAt,
+      timestamp: new Date().toISOString(), 
     log: logs.join("\n")
   };
 
   // 回传数据
   window.parent?.postMessage(payload, "https://www.credamo.com");
+   } catch(e) {
+    console.warn("postMessage failed:", e);
+  }
 
   // 写入隐藏字段（兜底）
   const hiddenInput = document.createElement('input');
