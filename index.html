@@ -149,14 +149,10 @@ function nextRound(){
     logs.push(`Round ${round} (Ari): ${aiReply}`);
     round++;
     
-   if(round > maxRounds){
-      // 🔧 增加温柔结束语
-      setTimeout(()=>{
-        addBubble('ai', "谢谢你和我聊到这里，我们继续问卷吧。");
-        setTimeout(endChat, 2000);
-      }, 1000);
+    if(round > maxRounds){
+      setTimeout(endChat, 1500); // 
     }
-  }, 1200 + Math.random() * 800); // 模拟思考时间 1.2–2秒
+  }, 1200 + Math.random() * 800);
 }
 
 
