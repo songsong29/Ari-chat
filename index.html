@@ -126,7 +126,7 @@ function addBubble(side, text){
 
 // 选取 AI 回复”
 function pickReply(expr, r){
-  const arr = expr === "高表达" ? replies_high : replies_low;
+  const arr = expr === "high" ? replies_high : replies_low;
   return arr[Math.min(r-1, arr.length-1)] || "";
 }
 
