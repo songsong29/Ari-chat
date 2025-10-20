@@ -76,18 +76,18 @@ let startedAt = Date.now();
 
 // ===== 预置回复（5轮） =====
 const replies_high = [
-  "听起来你最近真的有些累呢，我能理解这种感觉。",
-  "谢谢你和我分享这一切，你已经很努力了。",
-  "也许你可以暂时停下来，给自己一点喘息的空间。",
-  "情绪波动是正常的，希望我们的聊天能让你轻松一点。",
-  "请记住，你并不孤单。无论面对什么挑战，都可以随时告诉我。"
+  "听起来那确实不容易呢，我能感受到你的辛苦。",
+  "谢谢你愿意和我说这些，我觉得你已经做得很好了。",
+  "或许可以让自己稍微放松一下，做点让心情舒服的小事？",
+  "有时候情绪起伏是正常的，你不需要总是表现得坚强。",
+  "我希望这段对话能让你感到被理解，你并不孤单。"
 ];
 const replies_low = [
-  "我理解。你可以使用目标拆解法尝试解决。",
-  "建议你尝试分析问题来源并列出可执行步骤。",
-  "请考虑制定具体的计划，例如时间管理或优先级排序。",
-  "根据你的描述，可使用数据或日志追踪进展。",
-  "请注意合理分配精力和资源，有条不紊地推进。"
+  "我明白。这种情况可以考虑具体地梳理问题。",
+  "你可以尝试写下问题的来源，看看有没有更清晰的方向。",
+  "也许制定一个简单的计划会有帮助，比如从小目标开始。",
+  "你可以用记录的方式追踪进展，这样会更有掌控感。",
+  "请注意合理安排精力，循序渐进地应对挑战。"
 ];
 
 const $conv = document.getElementById('conversation');
@@ -119,7 +119,7 @@ $input.addEventListener('keydown', (e)=>{
 function addBubble(side, text){
   const div = document.createElement('div');
   div.className = `bubble ${side}`;
-  div.innerHTML = `<b>${side === 'ai' ? 'Airi' : '你'}：</b> ${escapeHTML(text)}`;
+  div.innerHTML = `<b>${side === 'ai' ? 'Ari' : '你'}：</b> ${escapeHTML(text)}`;
   $conv.appendChild(div);
   $conv.scrollTop = $conv.scrollHeight;
 }
@@ -140,7 +140,7 @@ function nextRound(){
 
   const aiReply = pickReply(expressiveness, round);
   addBubble('ai', aiReply);
-  logs.push(`Round ${round} (Airi): ${aiReply}`);
+  logs.push(`Round ${round} (Ari): ${aiReply}`);
 
   $input.value = "";
   round++;
