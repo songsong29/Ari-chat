@@ -181,12 +181,11 @@ function endChat(){
   };
 
   // 回传数据
-    try {
-    window.parent?.postMessage(payload, "https://www.credamo.com");
-  } catch(e) {
-    console.warn("postMessage failed:", e);
-  }
-
+  try {
+  window.parent?.postMessage(payload, "https://www.credamo.com");
+} catch(e) {
+  console.warn("postMessage failed:", e);
+}
 
   // 写入隐藏字段（兜底）
   const hiddenInput = document.createElement('input');
