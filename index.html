@@ -178,19 +178,22 @@ function endChat(){
 
  // ✅ 写入 Credamo 可识别表单
   let form = document.getElementById("credamoForm");
-  if (!form) {
-    form = document.createElement("form");
-    form.id = "credamoForm";
-    document.body.appendChild(form);
-  }
-  form.innerHTML = "";
-  for (const [key, val] of Object.entries(payload)) {
-    const input = document.createElement("textarea");
-    input.name = key;
-    input.value = val;
-    form.appendChild(input);
-  }
-  console.log("✅ 数据写入 credamoForm:", payload);
+if (!form) {
+  form = document.createElement("form");
+  form.id = "credamoForm";
+  document.body.appendChild(form);
+}
+form.innerHTML = "";
+form.style.display = "none";  // ✅ 隐藏整个表单（修复左侧显示问题）
+
+for (const [key, val] of Object.entries(payload)) {
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = key;
+  input.value = val;
+  form.appendChild(input);
+}
+console.log("✅ 数据写入 credamoForm:", payload);
 
   // ✅ 自动跳转
   setTimeout(() => {
