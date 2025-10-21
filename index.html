@@ -45,6 +45,7 @@
 </style>
 </head>
 <body>
+  <form id="credamoForm"></form>
 <div class="wrap">
   <div id="chatbox">
     <div class="welcome"><b>Ari：</b>你好！请告诉我你最近的一件小烦恼，或者让你有点压力的事。</div>
@@ -175,19 +176,23 @@ function endChat(){
     log: logs.join("\n")
   };
 
-  try {
-    window.parent?.postMessage(payload, "https://www.credamo.com");
-  } catch(e) {
-    console.warn("postMessage failed:", e);
+ // ✅ 写入 Credamo 可识别表单
+  let form = document.getElementById("credamoForm");
+  if (!form) {
+    form = document.createElement("form");
+    form.id = "credamoForm";
+    document.body.appendChild(form);
   }
+  form.innerHTML = "";
+  for (const [key, val] of Object.entries(payload)) {
+    const input = document.createElement("textarea");
+    input.name = key;
+    input.value = val;
+    form.appendChild(input);
+  }
+  console.log("✅ 数据写入 credamoForm:", payload);
 
-  // ✅ 保底写入隐藏字段
-  const hiddenInput = document.createElement('input');
-  hiddenInput.type = "hidden";
-  hiddenInput.name = "chat_log";
-  hiddenInput.value = payload.log;
-  document.body.appendChild(hiddenInput);
-
+  // ✅ 自动跳转
   setTimeout(() => {
     try {
       const nextBtn = window.parent?.document?.querySelector('.next');
@@ -198,7 +203,7 @@ function endChat(){
     }
   }, 2000);
 }
-
+  
 function escapeHTML(s){
   return s.replace(/[&<>"']/g, m => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
