@@ -45,27 +45,24 @@
 </style>
 </head>
 <body>
-  <!-- ✅ 新增隐藏表单（用于Credamo存数据） -->
+
+  <!-- ✅ 新增：隐藏表单，确保见数能读取数据 -->
   <form id="credamoForm"></form>
+
+<div id="chatbox">
+  <div id="conversation" class="conversation"></div>
+</div>
+
+  <div id="inputArea">
+    <input id="userInput" type="text" placeholder="请输入内容..." autocomplete="off" />
+    <button id="sendBtn">发送</button>
+  </div>
   
-<div class="wrap">
-  <div id="chatbox">
-    <div class="welcome"><b>Ari：</b>你好！请告诉我你最近的一件小烦恼，或者让你有点压力的事。</div>
-
-    <div id="conversation" class="conversation"></div>
-
-    <div class="inputrow">
-      <textarea id="userInput" placeholder="请输入你的消息…" aria-label="请输入你的消息"></textarea>
-      <button class="send" id="sendBtn" type="button">发送</button>
-    </div>
-
     <!-- 页面级披露：当 disclosure=披露 时显示；不披露则隐藏 -->
     <div id="disclosureNote" class="disclosure" hidden>
       ⚠️请注意：<b>Ari 只是一个 AI 工具，不具备真实的情感或意识，请理性看待。</b>
     </div>
-  </div>
-</div>
-
+  
 <script>
 // ===== 参数与实验条件 =====
 const urlParams = new URLSearchParams(window.location.search);
@@ -76,6 +73,12 @@ const maxRounds = 5;
 let round = 1;
 let logs = [];
 let startedAt = Date.now();
+
+  function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
 
 // ===== 预置回复（5轮） =====
 const replies_high = [
