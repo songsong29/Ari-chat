@@ -158,43 +158,57 @@ function nextRound(){
 
 
 // 对话完成处理
- function endChat(){
-      input.disabled = true;
-      sendBtn.disabled = true;
-      input.style.background = "#f0f0f0";
-      input.placeholder = "对话已结束";
+function endChat(){
+  $input.disabled = true;
+  $send.disabled = true;
+  $input.style.background = "#f0f0f0";
+  $input.placeholder = "对话已结束";
 
-      const payload = {
-        expressiveness,
-        disclosure,
-        rounds: round - 1,
-        duration_ms: Date.now() - startedAt,
-        timestamp: new Date().toISOString(),
-        log: logs.join("\n")
-      };
+  const payload = {
+    type: "chatlog",
+    expressiveness,
+    disclosure,
+    disclosure_mode: "page",
+    rounds: round - 1,
+    duration_ms: Date.now() - startedAt,
+    timestamp: new Date().toISOString(),
+    log: logs.join("\n")
+  };
 
-      // ✅ 将数据写入隐藏表单字段，Credamo 会自动导出
-      for (const [k, v] of Object.entries(payload)) {
-        const hidden = document.createElement("textarea");
-        hidden.name = k;
-        hidden.value = v;
-        hidden.hidden = true;
-        document.body.appendChild(hidden);
-      }
+  try {
+    window.parent?.postMessage(payload, "https://www.credamo.com");
+  } catch(e) {
+    console.warn("postMessage failed:", e);
+  }
 
-      console.log("✅ 数据写入表单字段:", payload);
+  // ✅ 保底写入隐藏字段
+  const hiddenInput = document.createElement('input');
+  hiddenInput.type = "hidden";
+  hiddenInput.name = "chat_log";
+  hiddenInput.value = payload.log;
+  document.body.appendChild(hiddenInput);
 
-      // === 自动尝试跳转或提示用户 ===
-      setTimeout(() => {
-        try {
-          const nextBtn = window.parent?.document?.querySelector('.next');
-          if (nextBtn) nextBtn.click();
-          else alert("请点击“下一步”继续问卷。");
-        } catch(e) {
-          alert("请点击“下一步”继续问卷。");
-        }
-      }, 2000);
+  setTimeout(() => {
+    try {
+      const nextBtn = window.parent?.document?.querySelector('.next');
+      if (nextBtn) nextBtn.click();
+      else alert("请点击“下一步”继续问卷。");
+    } catch(e) {
+      alert("请点击“下一步”继续问卷。");
     }
-  </script>
+  }, 2000);
+}
+
+function escapeHTML(s){
+  return s.replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+
+// ✅ 调试辅助：若报错则打印
+window.addEventListener('error', (e) => {
+  console.error("JavaScript error:", e.message);
+});
+</script>
 </body>
 </html>
