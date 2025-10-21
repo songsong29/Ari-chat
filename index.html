@@ -176,11 +176,21 @@ function endChat(){
     log: logs.join("\n")
   };
 
-  // 回传数据
   try {
-  window.parent?.postMessage(payload, "https://www.credamo.com");
-} catch(e) {
-  console.warn("postMessage failed:", e);
+  const payload = {
+    type: "chatlog",
+    expressiveness,
+    disclosure,
+    rounds: round - 1,
+    duration_ms: Date.now() - startedAt,
+    log: logs.join("\n"),
+  };
+
+  // 向 Credamo 父页面发送数据
+  window.parent.postMessage(payload, "https://www.credamo.com");
+  console.log("✅ 已向 Credamo 回传数据:", payload);
+} catch (err) {
+  console.error("❌ 回传 Credamo 失败:", err);
 }
 
   // 写入隐藏字段（兜底）
