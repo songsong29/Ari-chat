@@ -45,24 +45,24 @@
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div id="chatbox">
+    <div class="welcome"><b>Ari：</b>你好！请告诉我你最近的一件小烦恼，或者让你有点压力的事。</div>
 
-  <!-- ✅ 新增：隐藏表单，确保见数能读取数据 -->
-  <form id="credamoForm"></form>
+    <div id="conversation" class="conversation"></div>
 
-<div id="chatbox">
-  <div id="conversation" class="conversation"></div>
-</div>
+    <div class="inputrow">
+      <textarea id="userInput" placeholder="请输入你的消息…" aria-label="请输入你的消息"></textarea>
+      <button class="send" id="sendBtn" type="button">发送</button>
+    </div>
 
-  <div id="inputArea">
-    <input id="userInput" type="text" placeholder="请输入内容..." autocomplete="off" />
-    <button id="sendBtn">发送</button>
-  </div>
-  
     <!-- 页面级披露：当 disclosure=披露 时显示；不披露则隐藏 -->
     <div id="disclosureNote" class="disclosure" hidden>
       ⚠️请注意：<b>Ari 只是一个 AI 工具，不具备真实的情感或意识，请理性看待。</b>
     </div>
-  
+  </div>
+</div>
+
 <script>
 // ===== 参数与实验条件 =====
 const urlParams = new URLSearchParams(window.location.search);
@@ -74,27 +74,22 @@ let round = 1;
 let logs = [];
 let startedAt = Date.now();
 
-  function escapeHTML(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
 // ===== 预置回复（5轮） =====
 const replies_high = [
   "听起来这件事确实让你很难受，我能理解那种感觉。",
+  "谢谢你愿意告诉我这些，你真的已经尽力了。",
   "有时候我们太想做好，反而更容易感到焦虑。你愿意说说最让你困扰的部分吗？",
-  "谢谢你愿意告诉我这些，我知道你真的已经尽力了。",
   "我很在意你的感受，希望这段对话能让你轻松一点。",
   "你已经做得很好了，请别太苛责自己。"
 ];
 const replies_low = [
-  "我理解。或许可以从问题的主要部分入手分析，这样会更清晰一些。",
-  "当目标比较高时，焦虑在所难免。或许可以先确定一个最需要处理的部分？",
+  "我理解。也许可以从问题的主要部分入手分析，这样会更清晰一些。",
   "你已经整理了很多信息，可以看看哪些因素最关键。",
-  "也许我们可以一起整理一下思路，看看有哪些可行的方向。",
-  "整体来看，你的条理是明确的。稳步推进就很好。"
+  "当目标比较高时，焦虑在所难免。或许可以先确定一个最需要处理的部分? ",
+  "保持思路清晰有助于推进事情。我们可以先梳理一下当前的进展。",
+  "整体来看，你的方向是明确的。按计划稳步推进就很好。"
 ];
+
 const $conv = document.getElementById('conversation');
 const $input = document.getElementById('userInput');
 const $send  = document.getElementById('sendBtn');
@@ -169,39 +164,51 @@ function endChat(){
   $input.style.background = "#f0f0f0";
   $input.placeholder = "对话已结束";
 
-// ✅ 新增：生成可被 Credamo 导出的表单数据
-      const form = document.getElementById("credamoForm");
-      form.innerHTML = ""; // 清空旧数据
+  const payload = {
+    type: "chatlog",
+    expressiveness,
+    disclosure,
+    disclosure_mode: "page",
+    rounds: round - 1,
+    duration_ms: Date.now() - startedAt,
+    timestamp: new Date().toISOString(),
+    log: logs.join("\n")
+  };
 
-      const payload = {
-        expressiveness,
-        disclosure,
-        rounds: round - 1,
-        duration_ms: Date.now() - startedAt,
-        timestamp: new Date().toISOString(),
-        log: logs.join("\n")
-      };
+  try {
+    window.parent?.postMessage(payload, "https://www.credamo.com");
+  } catch(e) {
+    console.warn("postMessage failed:", e);
+  }
 
-      for (const [k, v] of Object.entries(payload)) {
-        const input = document.createElement("textarea");
-        input.name = k;
-        input.value = v;
-        form.appendChild(input);
-      }
+  // ✅ 保底写入隐藏字段
+  const hiddenInput = document.createElement('input');
+  hiddenInput.type = "hidden";
+  hiddenInput.name = "chat_log";
+  hiddenInput.value = payload.log;
+  document.body.appendChild(hiddenInput);
 
-      console.log("✅ 数据写入 credamoForm:", payload);
-
-      // ✅ 自动跳转或提示
-      setTimeout(() => {
-        try {
-          const nextBtn = window.parent?.document?.querySelector('.next');
-          if (nextBtn) nextBtn.click();
-          else alert("请点击“下一步”继续问卷。");
-        } catch (e) {
-          alert("请点击“下一步”继续问卷。");
-        }
-      }, 2000);
+  setTimeout(() => {
+    try {
+      const nextBtn = window.parent?.document?.querySelector('.next');
+      if (nextBtn) nextBtn.click();
+      else alert("请点击“下一步”继续问卷。");
+    } catch(e) {
+      alert("请点击“下一步”继续问卷。");
     }
-  </script>
+  }, 2000);
+}
+
+function escapeHTML(s){
+  return s.replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+
+// ✅ 调试辅助：若报错则打印
+window.addEventListener('error', (e) => {
+  console.error("JavaScript error:", e.message);
+});
+</script>
 </body>
 </html>
