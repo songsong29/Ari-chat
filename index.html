@@ -158,63 +158,43 @@ function nextRound(){
 
 
 // 对话完成处理
-function endChat(){
-  $input.disabled = true;
-  $send.disabled = true;
-   $input.style.background = "#f0f0f0";      // 🔧 新增：禁用时灰底提示
-  $input.placeholder = "对话已结束";        // 🔧 新增：灰底文字
+ function endChat(){
+      input.disabled = true;
+      sendBtn.disabled = true;
+      input.style.background = "#f0f0f0";
+      input.placeholder = "对话已结束";
 
+      const payload = {
+        expressiveness,
+        disclosure,
+        rounds: round - 1,
+        duration_ms: Date.now() - startedAt,
+        timestamp: new Date().toISOString(),
+        log: logs.join("\n")
+      };
 
-  const payload = {
-    type: "chatlog",
-    expressiveness,
-    disclosure,
-    disclosure_mode: "page",
-    rounds: round - 1,
-    duration_ms: Date.now() - startedAt,
-      timestamp: new Date().toISOString(), 
-    log: logs.join("\n")
-  };
+      // ✅ 将数据写入隐藏表单字段，Credamo 会自动导出
+      for (const [k, v] of Object.entries(payload)) {
+        const hidden = document.createElement("textarea");
+        hidden.name = k;
+        hidden.value = v;
+        hidden.hidden = true;
+        document.body.appendChild(hidden);
+      }
 
-  try {
-  const payload = {
-    type: "chatlog",
-    expressiveness,
-    disclosure,
-    rounds: round - 1,
-    duration_ms: Date.now() - startedAt,
-    log: logs.join("\n"),
-  };
+      console.log("✅ 数据写入表单字段:", payload);
 
-  // 向 Credamo 父页面发送数据
-  window.parent.postMessage(payload, "https://www.credamo.com");
-  console.log("✅ 已向 Credamo 回传数据:", payload);
-} catch (err) {
-  console.error("❌ 回传 Credamo 失败:", err);
-}
-
-  // 写入隐藏字段（兜底）
-  const hiddenInput = document.createElement('input');
-  hiddenInput.type = "hidden";
-  hiddenInput.name = "chat_log";
-  hiddenInput.value = payload.log;
-  document.body.appendChild(hiddenInput);
-
-  // 自动跳转见数下一页
-  setTimeout(() => {
-    try {
-      const nextBtn = window.parent?.document?.querySelector('.next');
-      if (nextBtn) nextBtn.click();
-    } catch(e) {
-      console.warn("无法访问父窗口按钮", e);
+      // === 自动尝试跳转或提示用户 ===
+      setTimeout(() => {
+        try {
+          const nextBtn = window.parent?.document?.querySelector('.next');
+          if (nextBtn) nextBtn.click();
+          else alert("请点击“下一步”继续问卷。");
+        } catch(e) {
+          alert("请点击“下一步”继续问卷。");
+        }
+      }, 2000);
     }
-  }, 2500);
-}
-
-// HTML 转义
-function escapeHTML(s){
-  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-</script>
+  </script>
 </body>
 </html>
